@@ -45,7 +45,7 @@ class RdsCloudwatchMetrics(CloudwatchMetrics):
 
 class RdsCloudwatchPlugin(CloudwatchPlugin):
     def __init__(self):
-        super(RdsCloudwatchPlugin, self).__init__(RdsCloudwatchMetrics, 'AWS_RDS_', 'boundary-plugin-aws-rds-python-status')
+        super(RdsCloudwatchPlugin, self).__init__(RdsCloudwatchMetrics, '', 'boundary-plugin-aws-rds-python-status')
 
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == '-v':

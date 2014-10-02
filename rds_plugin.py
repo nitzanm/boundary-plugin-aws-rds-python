@@ -1,51 +1,57 @@
 import boto
-import boto.ec2.elb
+import boto.rds
 import sys
 
 from boundary_aws_plugin.cloudwatch_plugin import CloudwatchPlugin
 from boundary_aws_plugin.cloudwatch_metrics import CloudwatchMetrics
 
-class ElbCloudwatchMetrics(CloudwatchMetrics):
+class RdsCloudwatchMetrics(CloudwatchMetrics):
     def __init__(self, access_key_id, secret_access_key):
-        return super(ElbCloudwatchMetrics, self).__init__(access_key_id, secret_access_key, 'AWS/ELB')
+        return super(RdsCloudwatchMetrics, self).__init__(access_key_id, secret_access_key, 'AWS/RDS')
 
     def get_region_list(self):
-        # Some regions are returned that actually do not support EC2.  Skip those.
-        return [r for r in boto.ec2.elb.regions() if r.name not in ['cn-north-1', 'us-gov-west-1']]
+        # Some regions are returned that actually do not support RDS.  Skip those.
+        return [r for r in boto.rds.regions() if r.name not in ['cn-north-1', 'us-gov-west-1']]
 
     def get_entities_for_region(self, region):
-        elb = boto.connect_elb(self.access_key_id, self.secret_access_key, region=region)
-        return elb.get_all_load_balancers()
+        rds = boto.connect_rds(self.access_key_id, self.secret_access_key, region=region)
+        return rds.get_all_dbinstances()
 
-    def get_entity_dimensions(self, region, load_balancer):
-        return dict(LoadBalancerName=load_balancer.name)
+    def get_entity_dimensions(self, region, db):
+        return dict(DBInstanceIdentifier=db.id)
+
+    def get_entity_source_name(self, db):
+        return db.id
 
     def get_metric_list(self):
         return (
-            ('HealthyHostCount', 'Average','AWS_ELB_HEALTHY_HOST_COUNT'),
-            ('UnHealthyHostCount', 'Average','AWS_ELB_UNHEALTHY_HOST_COUNT'),
-            ('RequestCount','Sum','AWS_ELB_REQUEST_COUNT'),
-            ('Latency', 'Average','AWS_ELB_LATENCY'),
-            ('HTTPCode_ELB_4XX','Sum','AWS_ELB_HTTP_CODE_4XX'),
-            ('HTTPCode_ELB_5XX','Sum','AWS_ELB_HTTP_CODE_5XX'),
-            ('HTTPCode_Backend_2XX','Sum','AWS_ELB_HTTP_CODE_BACKEND_2XX'),
-            ('HTTPCode_Backend_3XX','Sum','AWS_ELB_HTTP_CODE_BACKEND_3XX'),
-            ('HTTPCode_Backend_4XX','Sum','AWS_ELB_HTTP_CODE_BACKEND_4XX'),
-            ('HTTPCode_Backend_5XX','Sum','AWS_ELB_HTTP_CODE_BACKEND_5XX'),
-            ('BackendConnectionErrors','Sum','AWS_ELB_BACKEND_CONNECTION_ERRORS'),
-            ('SurgeQueueLength', 'Maximum','AWS_ELB_SURGE_QUEUE_LENGTH'),
-            ('SpilloverCount','Sum','AWS_ELB_SPILLOVER_COUNT'),
+            ('BinLogDiskUsage', 'Average', 'AWS_RDS_BIN_LOG_DISK_USAGE'),
+            ('CPUUtilization', 'Average', 'AWS_RDS_CPU_UTILIZATION'),
+            ('DatabaseConnections', 'Average', 'AWS_RDS_DATABASE_CONNECTIONS'),
+            ('DiskQueueDepth', 'Average', 'AWS_RDS_DISK_QUEUE_DEPTH'),
+            ('FreeableMemory', 'Average', 'AWS_RDS_FREEABLE_MEMORY'),
+            ('FreeStorageSpace', 'Average', 'AWS_RDS_FREE_STORAGE_SPACE'),
+            ('ReplicaLag', 'Average', 'AWS_RDS_REPLICA_LAG'),
+            ('SwapUsage', 'Average', 'AWS_RDS_SWAP_USAGE'),
+            ('ReadIOPS', 'Average', 'AWS_RDS_READ_IOPS'),
+            ('WriteIOPS', 'Average', 'AWS_RDS_WRITE_IOPS'),
+            ('ReadLatency', 'Average', 'AWS_RDS_READ_LATENCY'),
+            ('WriteLatency', 'Average', 'AWS_RDS_WRITE_LATENCY'),
+            ('ReadThroughput', 'Average', 'AWS_RDS_READ_THROUGHPUT'),
+            ('WriteThroughput', 'Average', 'AWS_RDS_WRITE_THROUGHPUT'),
+            ('NetworkReceiveThroughput', 'Sum', 'AWS_RDS_NET_RX_TP'),
+            ('NetworkTransmitThroughput', 'Sum', 'AWS_RDS_NET_TX_TP'),
         )
 
-class ElbCloudwatchPlugin(CloudwatchPlugin):
+class RdsCloudwatchPlugin(CloudwatchPlugin):
     def __init__(self):
-        super(ElbCloudwatchPlugin, self).__init__(ElbCloudwatchMetrics, 'AWS_ELB_', 'boundary-plugin-aws-elb-python-status')
+        super(RdsCloudwatchPlugin, self).__init__(RdsCloudwatchMetrics, 'AWS_RDS_', 'boundary-plugin-aws-rds-python-status')
 
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == '-v':
         import logging
         logging.basicConfig(level=logging.INFO)
 
-    plugin = ElbCloudwatchPlugin()
+    plugin = RdsCloudwatchPlugin()
     plugin.main()
 

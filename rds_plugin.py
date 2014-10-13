@@ -5,9 +5,10 @@ import sys
 from boundary_aws_plugin.cloudwatch_plugin import CloudwatchPlugin
 from boundary_aws_plugin.cloudwatch_metrics import CloudwatchMetrics
 
+
 class RdsCloudwatchMetrics(CloudwatchMetrics):
     def __init__(self, access_key_id, secret_access_key):
-        return super(RdsCloudwatchMetrics, self).__init__(access_key_id, secret_access_key, 'AWS/RDS')
+        super(RdsCloudwatchMetrics, self).__init__(access_key_id, secret_access_key, 'AWS/RDS')
 
     def get_region_list(self):
         # Some regions are returned that actually do not support RDS.  Skip those.
@@ -43,15 +44,11 @@ class RdsCloudwatchMetrics(CloudwatchMetrics):
             ('NetworkTransmitThroughput', 'Sum', 'AWS_RDS_NET_TX_TP'),
         )
 
-class RdsCloudwatchPlugin(CloudwatchPlugin):
-    def __init__(self):
-        super(RdsCloudwatchPlugin, self).__init__(RdsCloudwatchMetrics, '', 'boundary-plugin-aws-rds-python-status')
 
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == '-v':
         import logging
         logging.basicConfig(level=logging.INFO)
 
-    plugin = RdsCloudwatchPlugin()
+    plugin = CloudwatchPlugin(RdsCloudwatchMetrics, '', 'boundary-plugin-aws-rds-python-status')
     plugin.main()
-

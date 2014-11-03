@@ -27,7 +27,7 @@ class RdsCloudwatchMetrics(CloudwatchMetrics):
     def get_metric_list(self):
         return (
             ('BinLogDiskUsage', 'Average', 'AWS_RDS_BIN_LOG_DISK_USAGE'),
-            ('CPUUtilization', 'Average', 'AWS_RDS_CPU_UTILIZATION'),
+            ('CPUUtilization', 'Average', 'AWS_RDS_CPU_UTILIZATION', 0.01),
             ('DatabaseConnections', 'Average', 'AWS_RDS_DATABASE_CONNECTIONS'),
             ('DiskQueueDepth', 'Average', 'AWS_RDS_DISK_QUEUE_DEPTH'),
             ('FreeableMemory', 'Average', 'AWS_RDS_FREEABLE_MEMORY'),
